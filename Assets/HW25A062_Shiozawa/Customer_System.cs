@@ -7,10 +7,10 @@ using System;
 public class Customer_System : MonoBehaviour
 {
     [Header("設定")]
+    public int customer = 10;
     public float detectionRange = 5.0f;  // 範囲   
     public float stopThreshold = 0.1f;  // 速度
     public float rideTime = 1.0f;       // 乗るための時間
-    public int customer = 1;
 
     private SphereCollider triggerCollider;
     private Bus detectedBus;
@@ -22,7 +22,7 @@ public class Customer_System : MonoBehaviour
     void Awake()
     {
         triggerCollider = GetComponent<SphereCollider>();
-        triggerCollider.isTrigger = true;
+        GetComponent<SphereCollider>().isTrigger = true;
 
         //lineRendererの設定
         lineRenderer = GetComponent<LineRenderer>();
@@ -126,7 +126,6 @@ public class Customer_System : MonoBehaviour
     {
 
         Destroy(gameObject);
-        customer = customer + 1;
     }
 
 
