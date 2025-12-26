@@ -893,7 +893,7 @@ MonoBehaviour:
   passengerRadius: 0.3
   passengerLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 0
   footPivotName: Passenger_FootPivot
 --- !u!120 &1829177090
 LineRenderer:
