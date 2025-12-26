@@ -4,12 +4,7 @@ using UnityEngine;
 
 public class CourseManager : MonoBehaviour
 {
-    // public List<Transform> Waypoints = new List<Transform>();
 
-
-    /// <summary>
-    /// あとで消すかもlistのソート
-    /// </summary>
     [Header("Waypoint Settings")]
     public Transform waypointRoot;
 
@@ -86,9 +81,6 @@ public class CourseManager : MonoBehaviour
 
         return int.Parse(match.Value);
     }
-    /////////////////////////////////////////////////////
-
-
 
     /// <summary>
     /// position が属する「最も近い線分 index」を返す
