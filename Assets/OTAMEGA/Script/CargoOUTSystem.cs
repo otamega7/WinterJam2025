@@ -4,26 +4,29 @@ using System.Collections.Generic;
 
 [RequireComponent(typeof(SphereCollider))]
 [RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(AudioSource))] // ★追加: 音を鳴らすパーツを必須にする
 public class CargoOUTSystem : MonoBehaviour
 {
     [Header("--- 降車システム設定 ---")]
     public float detectionRange = 5.0f;
     public float stopThreshold = 0.1f;
-    
-    [Tooltip("停車してから降車開始までの待機時間")]
     public float waitBeforeUnloading = 1.0f;
-
-    [Tooltip("1人降りるごとの間隔（秒）")]
     public float unboardInterval = 0.5f;
 
-    [Header("--- 降車エリア設定 ---")]
-    [Tooltip("客が降り立つ範囲")]
-    public BoxCollider dropOffArea; 
+    [Header("--- 音響設定 (Sound) ---")] // ★追加
+    [Tooltip("チャリン！という効果音")]
+    public AudioClip cashSfx; 
     
-    [Tooltip("客の半径（重なり防止用）")]
+    [Tooltip("1回ごとに上がるピッチの量 (例: 0.1)")]
+    public float pitchStep = 0.1f; 
+    
+    [Tooltip("ピッチの最大値 (これ以上は高くならない)")]
+    public float maxPitch = 3.0f;
+
+    [Header("--- 降車エリア設定 ---")]
+    public BoxCollider dropOffArea; 
     public float passengerRadius = 0.3f;
-    public LayerMask passengerLayer;
-    public string footPivotName = "Passenger_FootPivot"; // 足元合わせ用
+    public string footPivotName = "Passenger_FootPivot";
 
     // 内部変数
     private SphereCollider triggerCollider;
@@ -32,14 +35,19 @@ public class CargoOUTSystem : MonoBehaviour
     private bool isUnloading = false;
     private Coroutine unloadingCoroutine;
     private LineRenderer lineRenderer;
+    private AudioSource audioSource; // ★追加
     
-    // 降ろした人数カウント
     private int unboardedCount = 0;
 
     void Awake()
     {
         triggerCollider = GetComponent<SphereCollider>();
         triggerCollider.isTrigger = true;
+        
+        // ★追加: AudioSourceの取得と設定
+        audioSource = GetComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+        audioSource.spatialBlend = 1.0f; // 1.0 = 3Dサウンド (カメラとの距離で音量が変わる)
 
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = 51;
@@ -64,7 +72,18 @@ public class CargoOUTSystem : MonoBehaviour
         if (lineRenderer != null) DrawCircle();
     }
 
-    // トラック検知
+    void DrawCircle()
+    {
+        float angle = 0f;
+        for (int i = 0; i < 51; i++)
+        {
+            float x = Mathf.Sin(Mathf.Deg2Rad * angle) * detectionRange;
+            float z = Mathf.Cos(Mathf.Deg2Rad * angle) * detectionRange;
+            lineRenderer.SetPosition(i, new Vector3(x, 0, z));
+            angle += 360f / 50;
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         Indian_Truck truck = other.GetComponentInParent<Indian_Truck>();
@@ -88,10 +107,9 @@ public class CargoOUTSystem : MonoBehaviour
 
     void Update()
     {
-        // 線の色制御（青色を降車中とする）
         if (isUnloading) lineRenderer.startColor = lineRenderer.endColor = Color.blue;
         else if (isTruckNearby) lineRenderer.startColor = lineRenderer.endColor = Color.yellow;
-        else lineRenderer.startColor = lineRenderer.endColor = Color.cyan; // 待機色は水色
+        else lineRenderer.startColor = lineRenderer.endColor = Color.cyan; 
 
         if (isTruckNearby && detectedTruck != null)
         {
@@ -99,7 +117,6 @@ public class CargoOUTSystem : MonoBehaviour
 
             if (isStopped && !isUnloading)
             {
-                // トラックに客が乗っていれば降車開始
                 if (detectedTruck.PassengerCount > 0)
                 {
                     unloadingCoroutine = StartCoroutine(UnloadingRoutine());
@@ -116,30 +133,30 @@ public class CargoOUTSystem : MonoBehaviour
     {
         isUnloading = true;
 
-        // 1. 停車後の待機
+        // ★追加: コンボ開始時にピッチをリセット（1.0 = 標準の高さ）
+        float currentPitch = 1.0f;
+
         yield return new WaitForSeconds(waitBeforeUnloading);
 
-        // 2. 客がいる限り降ろし続ける
         while (detectedTruck != null && detectedTruck.PassengerCount > 0)
         {
-            // トラックが動いてしまったら中断
             if (detectedTruck.CurrentSpeed > stopThreshold)
             {
                 CancelUnloading();
                 yield break;
             }
 
-            // --- 降車処理 ---
             GameObject npc = detectedTruck.UnloadOnePassenger();
             
             if (npc != null)
             {
-                // 降車エリアのどこかに配置する
                 PlaceNPCInDropOffArea(npc);
                 unboardedCount++;
+
+                // ★追加: 音を鳴らす処理
+                PlayCashSound(ref currentPitch);
             }
 
-            // 次の人が降りるまで待つ
             yield return new WaitForSeconds(unboardInterval);
         }
 
@@ -147,28 +164,38 @@ public class CargoOUTSystem : MonoBehaviour
         isUnloading = false;
     }
 
-    // NPCをエリア内に配置する
+    // ★追加: 音を鳴らしてピッチを上げる関数
+    void PlayCashSound(ref float pitch)
+    {
+        if (cashSfx != null && audioSource != null)
+        {
+            audioSource.pitch = pitch;           // 現在のピッチを適用
+            audioSource.PlayOneShot(cashSfx);    // 再生
+            
+            // 次回のためにピッチを上げる
+            pitch += pitchStep;
+            
+            // 最大値を超えないように制限
+            if (pitch > maxPitch) pitch = maxPitch;
+        }
+    }
+
     void PlaceNPCInDropOffArea(GameObject npc)
     {
         if (dropOffArea == null) return;
 
-        // NPCを降車エリアの子にする（整理のため）
         npc.transform.SetParent(this.transform);
 
-        // 配置場所を探す
         Vector3 targetPos = GetRandomPointInDropZone();
         
-        // 足元の補正（簡易版）
         Transform footPivot = FindDeepChild(npc.transform, footPivotName);
         if(footPivot != null)
         {
             Vector3 offset = npc.transform.InverseTransformPoint(footPivot.position);
-            targetPos -= offset;
+            targetPos -= offset; 
         }
 
         npc.transform.position = targetPos;
-        
-        // 向きをランダムに
         npc.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360f), 0);
     }
 
@@ -177,8 +204,14 @@ public class CargoOUTSystem : MonoBehaviour
         Vector3 center = dropOffArea.center;
         Vector3 size = dropOffArea.size;
         
-        float randomX = center.x + Random.Range(-size.x * 0.4f, size.x * 0.4f);
-        float randomZ = center.z + Random.Range(-size.z * 0.4f, size.z * 0.4f);
+        float margin = passengerRadius;
+        float rx = (size.x * 0.5f) - margin;
+        float rz = (size.z * 0.5f) - margin;
+        if(rx < 0) rx = 0; 
+        if(rz < 0) rz = 0;
+
+        float randomX = center.x + Random.Range(-rx, rx);
+        float randomZ = center.z + Random.Range(-rz, rz);
         float bottomY = center.y - (size.y * 0.5f);
 
         Vector3 localPos = new Vector3(randomX, bottomY, randomZ);
@@ -191,18 +224,6 @@ public class CargoOUTSystem : MonoBehaviour
         {
             if (unloadingCoroutine != null) StopCoroutine(unloadingCoroutine);
             isUnloading = false;
-        }
-    }
-
-    void DrawCircle()
-    {
-        float angle = 0f;
-        for (int i = 0; i < 51; i++)
-        {
-            float x = Mathf.Sin(Mathf.Deg2Rad * angle) * detectionRange;
-            float z = Mathf.Cos(Mathf.Deg2Rad * angle) * detectionRange;
-            lineRenderer.SetPosition(i, new Vector3(x, 0, z));
-            angle += 360f / 50;
         }
     }
     
@@ -221,14 +242,16 @@ public class CargoOUTSystem : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = isUnloading ? Color.blue : Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
+        Gizmos.color = isUnloading ? new Color(0, 0, 1, 0.3f) : new Color(0, 1, 1, 0.2f);
+        Gizmos.DrawSphere(transform.position, detectionRange);
 
         if (dropOffArea != null)
         {
             Gizmos.matrix = dropOffArea.transform.localToWorldMatrix;
-            Gizmos.color = new Color(0, 1, 1, 0.5f); // 水色のボックス
+            Gizmos.color = new Color(0, 1, 1, 0.5f);
             Gizmos.DrawWireCube(dropOffArea.center, dropOffArea.size);
+            Gizmos.color = new Color(0, 1, 1, 0.2f);
+            Gizmos.DrawCube(dropOffArea.center, dropOffArea.size);
         }
     }
 }
