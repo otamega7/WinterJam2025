@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &5077751 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4612398590614285217, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &15366273
 GameObject:
   m_ObjectHideFlags: 0
@@ -1017,6 +1022,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 393776181}
   m_SourcePrefab: {fileID: 100100000, guid: 700b9b45e4503894db0302e4a85e4452, type: 3}
+--- !u!4 &227841175 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 34057565511010194, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &274446773 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: 58540b59b491dda438c73d5077bdc85d, type: 3}
@@ -2239,17 +2249,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: 700b9b45e4503894db0302e4a85e4452, type: 3}
   m_PrefabInstance: {fileID: 82475357}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &808708130 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6497739881795017355, guid: 91d85383db469460e9f2a3bdc0bd4196, type: 3}
-  m_PrefabInstance: {fileID: 5374253156182630547}
+--- !u!4 &792816878 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 560756752985812781, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &839092956
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2665,7 +2669,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.07591304, y: 0.0000000016416302, z: -1.570959e-10, w: 0.9971145}
-  m_LocalPosition: {x: 9, y: 2.38, z: -3.536}
+  m_LocalPosition: {x: 9, y: 1.68, z: -3.64}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3237,6 +3241,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 8262833186550602150, guid: 58540b59b491dda438c73d5077bdc85d, type: 3}
+--- !u!4 &1095139175 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 483314512132688518, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1143439914 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: 700b9b45e4503894db0302e4a85e4452, type: 3}
@@ -3545,6 +3554,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4921798496361452742, guid: 700b9b45e4503894db0302e4a85e4452, type: 3}
+--- !u!4 &1232573706 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2331866085405587310, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1261357468
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4762,6 +4776,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 715349283}
   m_SourcePrefab: {fileID: 100100000, guid: 7f3a9d730a3af8048b654d732c698def, type: 3}
+--- !u!4 &2104034215 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1584867331623343555, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+  m_PrefabInstance: {fileID: 2002025276294198493}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2115818890 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: f711e5194237c9e49b44034f1de67837, type: 3}
@@ -4799,6 +4818,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: 700b9b45e4503894db0302e4a85e4452, type: 3}
   m_PrefabInstance: {fileID: 948361826}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1205193642353785368 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6497739881795017355, guid: 91d85383db469460e9f2a3bdc0bd4196, type: 3}
+  m_PrefabInstance: {fileID: 5374253156182630547}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2002025276294198493
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4808,9 +4838,33 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: kartModel
+      value: 
+      objectReference: {fileID: 1232573706}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
       propertyPath: speedText
       value: 
-      objectReference: {fileID: 808708130}
+      objectReference: {fileID: 1205193642353785368}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: backWheelL
+      value: 
+      objectReference: {fileID: 227841175}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: backWheelR
+      value: 
+      objectReference: {fileID: 792816878}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: frontWheelL
+      value: 
+      objectReference: {fileID: 2104034215}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: frontWheelR
+      value: 
+      objectReference: {fileID: 1095139175}
+    - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
+      propertyPath: steeringWheel
+      value: 
+      objectReference: {fileID: 5077751}
     - target: {fileID: 4628822591595921955, guid: fdccbeb270c024421a0f381bc4e80098, type: 3}
       propertyPath: cameraTransform
       value: 
