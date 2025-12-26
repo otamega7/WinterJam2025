@@ -1,87 +1,86 @@
 using UnityEngine;
-// System.Collections.Generic は今回使っていないので削除してもOK
 
 public class NPCGenerator : MonoBehaviour
 {
     [Header("Base Settings")]
-    [Tooltip("PassengerのルートPrefabを指定")]
     public GameObject npcBasePrefab;
-    [Tooltip("生成する場所")]
     public Transform spawnPoint;
 
-    [Header("Random Elements")]
-    [Tooltip("髪の毛のPrefabリスト (Hair01～03)")]
-    public GameObject[] hairPrefabs;
-    
-    [Tooltip("頭の色リスト (3色)")]
-    public Color[] headColors = new Color[3] { Color.white, Color.grey, Color.black };
-    
-    [Tooltip("胴体の色リスト (5色)")]
+    [Header("Color Settings")]
+    public Color[] headColors = new Color[3] { Color.white, Color.gray, Color.black };
     public Color[] bodyColors = new Color[5] { Color.red, Color.blue, Color.green, Color.yellow, Color.cyan };
-
-    // URPの場合は "_BaseColor" 、Standardパイプラインの場合は "_Color" が一般的です
-    private static readonly int ColorPropertyId = Shader.PropertyToID("_Color"); 
-    // ※もし色が反映されない場合は、上の "_Color" を "_BaseColor" に書き換えてください
 
     public void GenerateNPC()
     {
         if (npcBasePrefab == null || spawnPoint == null)
         {
-            Debug.LogError("PrefabまたはSpawnPointが設定されていません。");
+            Debug.LogError("❌ PrefabまたはSpawnPointが設定されていません！");
             return;
         }
 
-        // 1. ベースのNPCを生成
+        // 1. 生成
         GameObject npc = Instantiate(npcBasePrefab, spawnPoint.position, spawnPoint.rotation);
         npc.name = "Passenger_" + Random.Range(100, 999);
-
-        // 2. 各パーツのTransformを取得
-        Transform hairPivot = npc.transform.Find("Passenger_HairPivot");
-        Transform head = npc.transform.Find("Passenger_Head");
-        Transform body = npc.transform.Find("Passenger_Body");
-
-        // 3. 髪の毛の抽選と生成
-        if (hairPivot != null && hairPrefabs.Length > 0)
-        {
-            GameObject selectedHair = hairPrefabs[Random.Range(0, hairPrefabs.Length)];
-            if (selectedHair != null)
-            {
-                GameObject hair = Instantiate(selectedHair, hairPivot);
-                hair.transform.localPosition = Vector3.zero;
-                hair.transform.localRotation = Quaternion.identity;
-            }
-        }
-
-        // PropertyBlockの準備（これを使って色を上書きします）
-        MaterialPropertyBlock propBlock = new MaterialPropertyBlock();
-
-        // 4. 頭の色の抽選
-        if (head != null && headColors.Length > 0)
-        {
-            Renderer headRenderer = head.GetComponent<Renderer>();
-            if (headRenderer != null)
-            {
-                // 現在のプロパティを取得
-                headRenderer.GetPropertyBlock(propBlock);
-                // 色をセット
-                propBlock.SetColor(ColorPropertyId, headColors[Random.Range(0, headColors.Length)]);
-                // Rendererに適用
-                headRenderer.SetPropertyBlock(propBlock);
-            }
-        }
-
-        // 5. 胴体の色の抽選
-        if (body != null && bodyColors.Length > 0)
-        {
-            Renderer bodyRenderer = body.GetComponent<Renderer>();
-            if (bodyRenderer != null)
-            {
-                bodyRenderer.GetPropertyBlock(propBlock);
-                propBlock.SetColor(ColorPropertyId, bodyColors[Random.Range(0, bodyColors.Length)]);
-                bodyRenderer.SetPropertyBlock(propBlock);
-            }
-        }
         
-        Debug.Log("NPCを生成しました（MaterialPropertyBlock使用）");
+        // --- 修正箇所：パスの変更 ---
+        // 画像の階層に合わせて、親フォルダ(Passenger_Model)を含めたパスで探します
+        Transform head = npc.transform.Find("Passenger_Model/Passenger_Head");
+        Transform body = npc.transform.Find("Passenger_Model/Passenger_Body");
+        
+        // HairPivotは外にあるようなのでそのまま探します
+        Transform hairPivot = npc.transform.Find("Passenger_HairPivot");
+        // もし見つからなければ、念のためModelの中も探すように予備検索を入れます
+        if (hairPivot == null) hairPivot = npc.transform.Find("Passenger_Model/Passenger_HairPivot");
+
+
+        // 2. 髪の処理
+        if (hairPivot != null && hairPivot.childCount > 0)
+        {
+            int selectedIndex = Random.Range(0, hairPivot.childCount);
+            for (int i = 0; i < hairPivot.childCount; i++)
+                hairPivot.GetChild(i).gameObject.SetActive(i == selectedIndex);
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ HairPivotが見つかりません。階層を確認してください。");
+        }
+
+        // 3. 色の適用
+        ApplyColorForce(head, headColors, "Head");
+        ApplyColorForce(body, bodyColors, "Body");
+    }
+
+    // 強制的に色を適用する関数
+    private void ApplyColorForce(Transform target, Color[] colors, string partName)
+    {
+        if (target == null)
+        {
+            Debug.LogError($"❌ {partName} が見つかりません！ 'Passenger_Model' の中にあるか確認してください。");
+            return;
+        }
+
+        Renderer r = target.GetComponent<Renderer>();
+        if (r == null)
+        {
+            Debug.LogError($"❌ {partName} にRendererがついていません！");
+            return;
+        }
+
+        if (colors.Length == 0) return;
+
+        // 色を抽選
+        Color randomColor = colors[Random.Range(0, colors.Length)];
+        randomColor.a = 1.0f; // 透明度を強制的に1にする
+
+        // マテリアルを複製して適用
+        Material newMat = new Material(r.sharedMaterial);
+        newMat.color = randomColor; // .colorはURPでもStandardでも効きます
+
+        // URP用の念押し設定
+        if (newMat.HasProperty("_BaseColor")) newMat.SetColor("_BaseColor", randomColor);
+
+        r.sharedMaterial = newMat;
+
+        Debug.Log($"🎨 {partName} の色を {randomColor} に変更しました");
     }
 }
