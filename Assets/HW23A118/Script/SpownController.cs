@@ -1,21 +1,61 @@
 using UnityEngine;
 
-public class SpownController : MonoBehaviour
+public class SpawnerController : MonoBehaviour
 {
-    [SerializeField] GameObject prefab_Enemy;
-    public CourseManager course;
-    Vector2 center = new Vector2(10, 5); // 中心座標
-    float radius = 3.0f; // 半径
-    private Vector2 randomPos;
-    private int currentIndex;
+    [Header("References")]
+    public CourseManager courseManager;
+    public GameObject enemyPrefab;
+    public Transform playerCar;
+
+    [Header("Spawn Settings")]
+    public float spawnRadius = 5f;
+    public int spawnCount = 3;
+    public float minDistanceFromPlayer = 20f;
+
     void Start()
     {
-        randomPos = center + Random.insideUnitCircle * radius;
-        currentIndex = course.GetNearestSegmentIndex(transform.position);
+        SpawnEnemies();
     }
-    // Update is called once per frame
-    void Update()
+
+    public void SpawnEnemies()
     {
-        Instantiate(prefab_Enemy);
+        if (courseManager == null || enemyPrefab == null)
+        {
+            Debug.LogError("SpawnerController: Reference missing");
+            return;
+        }
+
+        int waypointCount = courseManager.Waypoints.Count;
+
+        for (int i = 0; i < spawnCount; i++)
+        {
+            int index = Random.Range(0, waypointCount);
+            Vector3 basePos = courseManager.Waypoints[index].position;
+
+            // Waypoint 周辺にランダムオフセット
+            Vector2 rand = Random.insideUnitCircle * spawnRadius;
+            Vector3 spawnPos = basePos + new Vector3(rand.x, 0f, rand.y);
+
+            // プレイヤーに近すぎたらスキップ
+            if (playerCar != null)
+            {
+                float dist = Vector3.Distance(spawnPos, playerCar.position);
+                if (dist < minDistanceFromPlayer)
+                {
+                    i--;
+                    continue;
+                }
+            }
+
+            GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+
+            // AI に CourseManager / Player を渡す
+            AICarController ai = enemy.GetComponent<AICarController>();
+            if (ai != null)
+            {
+                ai.course = courseManager;
+                ai.playerCar = playerCar;
+            }
+        }
     }
 }
