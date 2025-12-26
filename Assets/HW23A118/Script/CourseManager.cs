@@ -4,10 +4,16 @@ using UnityEngine;
 
 public class CourseManager : MonoBehaviour
 {
+    // public List<Transform> Waypoints = new List<Transform>();
+
+
+    /// <summary>
+    /// あとで消すかもlistのソート
+    /// </summary>
     [Header("Waypoint Settings")]
     public Transform waypointRoot;
 
-    public List<Transform> waypoints = new List<Transform>();
+    private List<Transform> waypoints = new List<Transform>();
     public IReadOnlyList<Transform> Waypoints => waypoints;
 
     // WP_000 の 000 部分を取得
@@ -80,21 +86,56 @@ public class CourseManager : MonoBehaviour
 
         return int.Parse(match.Value);
     }
+    /////////////////////////////////////////////////////
 
-    public int GetNearestIndex(Vector3 position)
+
+
+    /// <summary>
+    /// position が属する「最も近い線分 index」を返す
+    /// （index と index+1 の間）
+    /// </summary>
+    public int GetNearestSegmentIndex(Vector3 position)
     {
-        int nearest = 0;
         float minDist = float.MaxValue;
+        int nearestIndex = 0;
 
-        for (int i = 0; i < waypoints.Count; i++)
+        for (int i = 0; i < Waypoints.Count; i++)
         {
-            float dist = Vector3.Distance(position, waypoints[i].position);
+            int next = (i + 1) % Waypoints.Count;
+
+            Vector3 a = Waypoints[i].position;
+            Vector3 b = Waypoints[next].position;
+
+            Vector3 closest = GetClosestPointOnLineSegment(a, b, position);
+            float dist = Vector3.Distance(position, closest);
+
             if (dist < minDist)
             {
                 minDist = dist;
-                nearest = i;
+                nearestIndex = i;
             }
         }
-        return nearest;
+
+        return nearestIndex;
+    }
+
+    /// <summary>
+    /// 線分 AB 上の position に最も近い点を返す
+    /// </summary>
+    Vector3 GetClosestPointOnLineSegment(Vector3 a, Vector3 b, Vector3 position)
+    {
+        Vector3 ab = b - a;
+        float t = Vector3.Dot(position - a, ab) / ab.sqrMagnitude;
+        t = Mathf.Clamp01(t);
+        return a + ab * t;
+    }
+
+    /// <summary>
+    /// index 番目の線分の進行方向ベクトル
+    /// </summary>
+    public Vector3 GetSegmentDirection(int index)
+    {
+        int next = (index + 1) % Waypoints.Count;
+        return (Waypoints[next].position - Waypoints[index].position).normalized;
     }
 }

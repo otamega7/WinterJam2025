@@ -17,53 +17,44 @@ public class AICarController : MonoBehaviour
     private int direction; // 1: forward, -1: backward
     private bool initialized = false;
 
+    float segmentT; // 0〜1 の進行度
+
     void Start()
     {
-        InitializeDirection();
+        currentIndex = course.GetNearestSegmentIndex(transform.position);
+        segmentT = 0f;
+
+        int playerIndex = course.GetNearestSegmentIndex(playerCar.position);
+        direction = (playerIndex >= currentIndex) ? 1 : -1;
     }
 
     void Update()
     {
-        if (!initialized)
-            return;
-
+        MoveAlongSegment();
         CheckDeactivate();
-        MoveAlongCourse();
     }
 
-    /// <summary>
-    /// 最初に一度だけ前後判定を行う
-    /// </summary>
-    void InitializeDirection()
+    void MoveAlongSegment()
     {
-        currentIndex = course.GetNearestIndex(transform.position);
-        int playerIndex = course.GetNearestIndex(playerCar.position);
+        int next = (currentIndex + direction + course.Waypoints.Count) % course.Waypoints.Count;
 
-        if (playerIndex > currentIndex)
-            direction = 1;
-        else
-            direction = -1;
+        Vector3 a = course.Waypoints[currentIndex].position;
+        Vector3 b = course.Waypoints[next].position;
 
-        initialized = true;
-    }
+        Vector3 segment = b - a;
+        float length = segment.magnitude;
+        Vector3 dir = segment.normalized;
 
-    void MoveAlongCourse()
-    {
-        Transform target = course.Waypoints[currentIndex];
-        float dist = Vector3.Distance(transform.position, target.position);
+        segmentT += (speed * Time.deltaTime) / length;
 
-        if (dist < reachDistance)
+        if (segmentT >= 1f)
         {
-            currentIndex += direction;
-
-            if (currentIndex < 0)
-                currentIndex = course.Waypoints.Count - 1;
-            else if (currentIndex >= course.Waypoints.Count)
-                currentIndex = 0;
+            segmentT = 0f;
+            currentIndex = next;
         }
 
-        Vector3 dir = (target.position - transform.position).normalized;
-        transform.position += dir * speed * Time.deltaTime;
+        Vector3 targetPos = a + segment * segmentT;
+        transform.position = targetPos;
 
         if (dir != Vector3.zero)
         {
@@ -76,6 +67,7 @@ public class AICarController : MonoBehaviour
         }
     }
 
+
     /// <summary>
     /// プレイヤーから一定距離離れたら非アクティブ化
     /// </summary>
@@ -87,4 +79,5 @@ public class AICarController : MonoBehaviour
             gameObject.SetActive(false);
         }
     }
+
 }
